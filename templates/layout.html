@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Student Performance Prediction{% endblock %}</title>
+    <!-- Google Fonts Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        glass: {
+                            100: 'rgba(255, 255, 255, 0.08)',
+                            200: 'rgba(255, 255, 255, 0.12)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        .sidebar-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-item:hover {
+            transform: translateX(6px);
+        }
+        .glassmorphism {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="flex flex-col lg:flex-row min-h-screen">
+
+    {% if session.user_id %}
+    <!-- Sidebar Navigation -->
+    <aside class="w-full lg:w-64 glassmorphism lg:min-h-screen flex flex-col justify-between p-6 border-b lg:border-b-0 lg:border-r border-slate-800 z-10 shrink-0">
+        <div>
+            <!-- Logo Header -->
+            <div class="flex items-center gap-3 mb-8">
+                <div class="p-2.5 bg-gradient-to-tr from-brand-600 to-indigo-500 rounded-xl shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-brain-circuit text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-outfit font-extrabold text-lg leading-tight tracking-wide bg-gradient-to-r from-white via-slate-100 to-brand-400 bg-clip-text text-transparent">EduPredict AI</h1>
+                    <span class="text-xs text-slate-400 font-medium tracking-widest uppercase">Learning Hub</span>
+                </div>
+            </div>
+
+            <!-- Profile Widget -->
+            <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 font-outfit font-bold text-lg">
+                        {{ session.name[0] | upper }}
+                    </div>
+                    <div class="overflow-hidden">
+                        <h4 class="font-semibold text-sm truncate text-slate-200">{{ session.name }}</h4>
+                        <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded-full inline-block mt-1
+                            {% if session.role == 'admin' %}
+                                bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                            {% elif session.role == 'teacher' %}
+                                bg-indigo-500/10 text-indigo-400 border border-indigo-500/20
+                            {% else %}
+                                bg-brand-500/10 text-brand-400 border border-brand-500/20
+                            {% endif %}">
+                            {{ session.role }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="space-y-2">
+                {% if session.role == 'student' %}
+                    <a href="{{ url_for('student_dashboard') }}" class="sidebar-item flex items-center gap-3.5 px-4 py-3 rounded-xl {% if request.path == '/student/dashboard' %} bg-brand-600 text-white font-medium shadow-lg shadow-brand-600/15 {% else %} text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 {% endif %}">
+                        <i class="fa-solid fa-chart-pie w-5 text-center text-lg"></i>
+                        <span>My Analytics</span>
+                    </a>
+                {% endif %}
+
+                {% if session.role == 'teacher' %}
+                    <a href="{{ url_for('teacher_dashboard') }}" class="sidebar-item flex items-center gap-3.5 px-4 py-3 rounded-xl {% if request.path == '/teacher/dashboard' %} bg-brand-600 text-white font-medium shadow-lg shadow-brand-600/15 {% else %} text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 {% endif %}">
+                        <i class="fa-solid fa-users w-5 text-center text-lg"></i>
+                        <span>Class Tracker</span>
+                    </a>
+                {% endif %}
+
+                {% if session.role == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="sidebar-item flex items-center gap-3.5 px-4 py-3 rounded-xl {% if request.path == '/admin/dashboard' %} bg-brand-600 text-white font-medium shadow-lg shadow-brand-600/15 {% else %} text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 {% endif %}">
+                        <i class="fa-solid fa-sliders w-5 text-center text-lg"></i>
+                        <span>Control Panel</span>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+
+        <!-- Logout Area -->
+        <div class="mt-8 border-t border-slate-800 pt-6">
+            <a href="{{ url_for('logout') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition duration-300 font-medium">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center text-lg"></i>
+                <span>Sign Out</span>
+            </a>
+        </div>
+    </aside>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0">
+        <!-- Top Navbar -->
+        <header class="h-16 border-b border-slate-800 px-6 flex items-center justify-between glassmorphism lg:sticky lg:top-0 z-20">
+            <div>
+                <h2 class="font-outfit font-bold text-lg text-slate-100">
+                    {% block header_title %}System Dashboard{% endblock %}
+                </h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-xs text-slate-400 font-semibold hidden md:inline-block"><i class="fa-solid fa-clock mr-1"></i> May 2026</span>
+                <div class="relative">
+                    <button onclick="toggleNotifications(event)" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center relative hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-bell text-slate-400 hover:text-slate-200 cursor-pointer"></i>
+                        <span id="notificationBadge" class="w-2 h-2 bg-brand-500 rounded-full absolute top-1.5 right-1.5 animate-pulse"></span>
+                    </button>
+                    
+                    <!-- Notification Dropdown -->
+                    <div id="notificationDropdown" class="absolute right-0 mt-2.5 w-80 glassmorphism rounded-xl shadow-2xl border border-slate-800 p-4 hidden z-50 animate-[slideIn_0.2s_ease-out]">
+                        <div class="flex justify-between items-center pb-2 border-b border-slate-800 mb-2">
+                            <h4 class="font-outfit font-bold text-xs text-slate-200">System Notifications</h4>
+                            <button onclick="clearNotifications(event)" class="text-[10px] text-brand-400 hover:text-brand-300 font-semibold">Clear</button>
+                        </div>
+                        <div class="space-y-2.5 max-h-64 overflow-y-auto text-xs" id="notificationList">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Body -->
+        <div class="p-6 md:p-8 flex-1 overflow-y-auto">
+            <!-- Flash Message System -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6 space-y-3 max-w-4xl">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-xl flex items-center justify-between border shadow-lg animate-[slideIn_0.3s_ease-out]
+                                {% if category == 'success' %}
+                                    bg-emerald-500/10 text-emerald-400 border-emerald-500/30
+                                {% elif category == 'danger' %}
+                                    bg-rose-500/10 text-rose-400 border-rose-500/30
+                                {% elif category == 'warning' %}
+                                    bg-amber-500/10 text-amber-400 border-amber-500/30
+                                {% else %}
+                                    bg-slate-800/80 text-slate-300 border-slate-700
+                                {% endif %}"
+                                role="alert" id="alert-{{ loop.index }}">
+                                <div class="flex items-center gap-3">
+                                    {% if category == 'success' %}
+                                        <i class="fa-solid fa-circle-check text-xl"></i>
+                                    {% elif category == 'danger' %}
+                                        <i class="fa-solid fa-circle-exclamation text-xl"></i>
+                                    {% elif category == 'warning' %}
+                                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-circle-info text-xl"></i>
+                                    {% endif %}
+                                    <span class="font-medium text-sm">{{ message }}</span>
+                                </div>
+                                <button onclick="document.getElementById('alert-{{ loop.index }}').remove()" class="text-slate-400 hover:text-slate-200 transition duration-150">
+                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script>
+        // Custom animation CSS injected
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateY(-10px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Notification System Logic
+        const userRole = "{{ session.role }}";
+        const notificationsData = {
+            student: [
+                { text: "AI Recommended: 'Effective Study Techniques & Time Management' has been added to your path.", time: "1 hr ago", icon: "fa-wand-magic-sparkles", color: "text-brand-400" },
+                { text: "Assessment score recorded: You scored 92% in Mathematics.", time: "2 days ago", icon: "fa-circle-check", color: "text-emerald-400" },
+                { text: "Welcome to EduPredict! Your initial performance metrics are ready.", time: "3 days ago", icon: "fa-graduation-cap", color: "text-indigo-400" }
+            ],
+            teacher: [
+                { text: "Alert: Bob Marley has been classified as High Risk.", time: "2 hrs ago", icon: "fa-triangle-exclamation", color: "text-rose-400" },
+                { text: "Assessment submitted: Quentin Tarantino scored 69% in English.", time: "5 hrs ago", icon: "fa-circle-exclamation", color: "text-amber-400" },
+                { text: "Personalized task assigned to Steve Rogers.", time: "1 day ago", icon: "fa-plus-circle", color: "text-brand-400" }
+            ],
+            admin: [
+                { text: "ML Model: RandomForest retrained successfully with 320 records.", time: "30 mins ago", icon: "fa-arrows-rotate", color: "text-brand-400" },
+                { text: "Bulk Import: CSV processed successfully with 12 new students.", time: "4 hrs ago", icon: "fa-file-csv", color: "text-emerald-400" },
+                { text: "Database Setup: Seeding completed, 22 user profiles loaded.", time: "1 day ago", icon: "fa-database", color: "text-indigo-400" }
+            ]
+        };
+
+        function toggleNotifications(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById("notificationDropdown");
+            const badge = document.getElementById("notificationBadge");
+            
+            const isHidden = dropdown.classList.contains("hidden");
+            
+            // Toggle
+            if (isHidden) {
+                dropdown.classList.remove("hidden");
+                renderNotifications();
+                if (badge) {
+                    badge.classList.add("hidden"); // Remove pulsing dot once viewed
+                }
+            } else {
+                dropdown.classList.add("hidden");
+            }
+        }
+
+        function renderNotifications() {
+            const list = document.getElementById("notificationList");
+            const roleData = notificationsData[userRole] || [
+                { text: "Welcome to the EduPredict platform.", time: "Just now", icon: "fa-bell", color: "text-brand-400" }
+            ];
+            
+            if (roleData.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-4 text-slate-500">
+                        <i class="fa-solid fa-bell-slash text-lg mb-1 block"></i>
+                        No new notifications
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = roleData.map(n => `
+                <div class="p-2.5 rounded-lg bg-slate-900/40 border border-slate-800/80 flex items-start gap-2.5 hover:bg-slate-900/80 transition duration-150">
+                    <div class="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700/60 ${n.color}">
+                        <i class="fa-solid ${n.icon} text-[10px]"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-slate-300 leading-normal">${n.text}</p>
+                        <span class="text-[9px] text-slate-500 mt-1 block font-semibold"><i class="fa-solid fa-clock mr-0.5"></i> ${n.time}</span>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function clearNotifications(event) {
+            event.stopPropagation();
+            notificationsData[userRole] = [];
+            renderNotifications();
+            const badge = document.getElementById("notificationBadge");
+            if (badge) {
+                badge.classList.add("hidden");
+            }
+        }
+
+        // Click outside closes dropdown
+        document.addEventListener("click", () => {
+            const dropdown = document.getElementById("notificationDropdown");
+            if (dropdown && !dropdown.classList.contains("hidden")) {
+                dropdown.classList.add("hidden");
+            }
+        });
+    </script>
+</body>
+</html>

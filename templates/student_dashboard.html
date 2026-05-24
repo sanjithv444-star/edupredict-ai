@@ -1,0 +1,418 @@
+{% extends 'layout.html' %}
+
+{% block title %}My Student Dashboard - EduPredict AI{% endblock %}
+{% block header_title %}Student Learning Analytics{% endblock %}
+
+{% block head %}
+<!-- Chart.js CDN for progress tracking -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-7xl mx-auto">
+
+    <!-- Top Summary Banner & Risk Assessment -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- ML Prediction Card -->
+        <div class="lg:col-span-1 rounded-2xl p-6 relative overflow-hidden shadow-xl border
+            {% if profile.predicted_risk == 'Safe' %}
+                bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border-emerald-500/20 text-emerald-100
+            {% elif profile.predicted_risk == 'Medium Risk' %}
+                bg-gradient-to-br from-amber-900/40 to-orange-900/40 border-amber-500/20 text-amber-100
+            {% else %}
+                bg-gradient-to-br from-rose-900/40 to-red-900/40 border-rose-500/20 text-rose-100
+            {% endif %}">
+            
+            <div class="absolute right-4 top-4 opacity-15 text-7xl">
+                {% if profile.predicted_risk == 'Safe' %}
+                    <i class="fa-solid fa-shield-check"></i>
+                {% elif profile.predicted_risk == 'Medium Risk' %}
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                {% else %}
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                {% endif %}
+            </div>
+
+            <div class="relative z-10 flex flex-col justify-between h-full min-h-[140px]">
+                <div>
+                    <span class="text-xs uppercase tracking-wider font-semibold opacity-75">AI Prediction Tier</span>
+                    <h3 class="font-outfit font-extrabold text-3xl mt-1.5 tracking-tight">
+                        {{ profile.predicted_risk }}
+                    </h3>
+                </div>
+                <div class="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-sm">
+                    <span>Expected Grade: <strong class="font-outfit text-lg font-bold text-white ml-1">{{ profile.predicted_grade }}</strong></span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-white/15 text-white">Model Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Metrics (Attendance & Study Hours) -->
+        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <!-- Attendance Rate -->
+            <div class="glassmorphism rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Attendance Rate</span>
+                    <button onclick="openUpdateProfileModal()" title="Update Metrics" class="w-8 h-8 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 flex items-center justify-center transition hover:scale-[1.05] active:scale-95">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </div>
+                <div>
+                    <h2 class="font-outfit font-bold text-3xl text-slate-100">{{ profile.attendance_rate }}%</h2>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+                        <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ profile.attendance_rate }}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Hours per Week -->
+            <div class="glassmorphism rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Study Commitment</span>
+                    <button onclick="openUpdateProfileModal()" title="Update Metrics" class="w-8 h-8 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 flex items-center justify-center transition hover:scale-[1.05] active:scale-95">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </div>
+                <div>
+                    <h2 class="font-outfit font-bold text-3xl text-slate-100">{{ profile.study_hours_per_week }} hrs/wk</h2>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+                        <div class="bg-brand-500 h-1.5 rounded-full" style="width: {{ (profile.study_hours_per_week / 40.0) * 100 }}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Past Score (GPA Metric) -->
+            <div class="glassmorphism rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Average Performance</span>
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="font-outfit font-bold text-3xl text-slate-100">{{ profile.past_score }}%</h2>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+                        <div class="bg-cyan-500 h-1.5 rounded-full" style="width: {{ profile.past_score }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Center Content: Progress Chart & Online Quiz Submission -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Historical Performance Chart.js (Takes 2 columns) -->
+        <div class="lg:col-span-2 glassmorphism rounded-2xl p-6 shadow-xl">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="font-outfit font-bold text-lg text-slate-100">Performance Over Time</h3>
+                    <p class="text-xs text-slate-400">Historical trend across subjects</p>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400 font-semibold bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <span class="w-2.5 h-2.5 bg-brand-500 rounded-full inline-block"></span>
+                    <span>Assessment Scores (%)</span>
+                </div>
+            </div>
+            <div class="relative h-[280px] w-full">
+                {% if assessments %}
+                    <canvas id="progressChart"></canvas>
+                {% else %}
+                    <div class="flex flex-col items-center justify-center h-full text-slate-500">
+                        <i class="fa-solid fa-chart-line text-4xl mb-2.5"></i>
+                        <p class="text-sm">No assessment data available. Submit a quiz to see progress!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Take Assessment Quiz / Submit Score Card (1 Column) -->
+        <div class="lg:col-span-1 glassmorphism rounded-2xl p-6 shadow-xl">
+            <h3 class="font-outfit font-bold text-lg text-slate-100 mb-2">Simulate Assessment</h3>
+            <p class="text-xs text-slate-400 mb-6">Submit mock exam data to test the AI recommender.</p>
+
+            <form action="{{ url_for('take_quiz') }}" method="POST" class="space-y-4">
+                <div>
+                    <label for="subject" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Subject Course</label>
+                    <div class="relative">
+                        <select id="subject" name="subject" required
+                            class="appearance-none block w-full pl-4 pr-10 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm">
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Science">Science</option>
+                            <option value="English">English</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="score" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Scored Percentage (%)</label>
+                    <div class="flex items-center gap-4">
+                        <input id="score" name="score" type="range" min="0" max="100" value="75"
+                            oninput="document.getElementById('scoreVal').innerText = this.value + '%'"
+                            class="w-full accent-brand-500 bg-slate-800 rounded-lg appearance-none cursor-pointer h-2">
+                        <span id="scoreVal" class="text-sm font-bold text-brand-400 shrink-0 w-12 text-right">75%</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="total_questions" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Total Questions</label>
+                    <input id="total_questions" name="total_questions" type="number" min="5" max="100" value="10" required
+                        class="block w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm">
+                </div>
+
+                <button type="submit"
+                    class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold rounded-xl active:scale-[0.98] transition-all duration-150 text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-paper-plane-top"></i>
+                    Submit Score
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Recommendations Grid (AI recommendations list) -->
+    <div class="glassmorphism rounded-2xl p-6 shadow-xl">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="font-outfit font-bold text-lg text-slate-100">AI Personalized Learning Path</h3>
+                <p class="text-xs text-slate-400">Remedial or extension resources selected specifically for you</p>
+            </div>
+            <span class="text-xs bg-brand-500/10 text-brand-400 border border-brand-500/20 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i> Custom Optimized
+            </span>
+        </div>
+
+        {% if recommendations %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for rec in recommendations %}
+                    <div class="p-5 rounded-xl border flex flex-col justify-between transition duration-300 relative group overflow-hidden
+                        {% if rec.status == 'completed' %}
+                            bg-slate-900/30 border-slate-800 opacity-60
+                        {% else %}
+                            bg-slate-900/60 border-slate-700/80 hover:border-brand-500/40 hover:shadow-lg hover:shadow-brand-500/5
+                        {% endif %}">
+                        
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded
+                                    {% if rec.status == 'completed' %}
+                                        bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                                    {% else %}
+                                        bg-brand-500/10 text-brand-400 border border-brand-500/20
+                                    {% endif %}">
+                                    {{ rec.status }}
+                                </span>
+                                <span class="text-[10px] text-slate-500">{{ rec.created_at.strftime('%b %d, %Y') }}</span>
+                            </div>
+                            <h4 class="font-outfit font-semibold text-slate-200 group-hover:text-white transition duration-150 mb-2">
+                                {{ rec.resource_title }}
+                            </h4>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                                This resource was assigned based on your performance metrics to support your learning progress.
+                            </p>
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-3 border-t border-slate-800/80">
+                            <!-- Link to external resource -->
+                            <a href="{{ rec.resource_url }}" target="_blank"
+                                class="flex-1 text-center py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg text-slate-300 hover:text-white transition duration-150 flex items-center justify-center gap-1.5 border border-slate-700">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                Open Material
+                            </a>
+                            
+                            {% if rec.status != 'completed' %}
+                                <form action="{{ url_for('complete_recommendation', rec_id=rec.id) }}" method="POST" class="shrink-0">
+                                    <button type="submit" title="Mark as Completed"
+                                        class="w-8 h-8 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/25 border border-emerald-500/25 text-emerald-400 flex items-center justify-center hover:scale-105 active:scale-95 transition duration-150">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12 bg-slate-900/30 border border-slate-800 rounded-xl">
+                <i class="fa-solid fa-hourglass-start text-slate-600 text-4xl mb-3"></i>
+                <p class="text-sm text-slate-400">No recommendations found yet. Complete a quiz to analyze weaknesses.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Update Metrics Modal Overlay -->
+    <div id="updateProfileModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glassmorphism w-full max-w-md p-6 rounded-2xl shadow-2xl relative border border-slate-700/80 mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+            <!-- Close Button -->
+            <button onclick="closeUpdateProfileModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-200">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <h3 class="font-outfit font-bold text-lg text-slate-100 mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-user-gear text-brand-400"></i> Update Academic Metrics
+            </h3>
+            <p class="text-xs text-slate-400 mb-6">Modify your attendance rate and study commitment parameters.</p>
+
+            <form action="{{ url_for('update_student_profile') }}" method="POST" class="space-y-4">
+                <div>
+                    <label for="attendance_rate" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Attendance Rate (%)</label>
+                    <div class="flex items-center gap-4">
+                        <input id="attendance_rate" name="attendance_rate" type="range" min="0" max="100" value="{{ profile.attendance_rate }}"
+                            oninput="document.getElementById('attendanceVal').innerText = this.value + '%'"
+                            class="w-full accent-brand-500 bg-slate-800 rounded-lg appearance-none cursor-pointer h-2">
+                        <span id="attendanceVal" class="text-sm font-bold text-brand-400 shrink-0 w-12 text-right">{{ profile.attendance_rate }}%</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="study_hours_per_week" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Study Commitment (hours/week)</label>
+                    <div class="flex items-center gap-4">
+                        <input id="study_hours_per_week" name="study_hours_per_week" type="range" min="0" max="40" value="{{ profile.study_hours_per_week }}"
+                            oninput="document.getElementById('studyVal').innerText = this.value + ' hrs'"
+                            class="w-full accent-brand-500 bg-slate-800 rounded-lg appearance-none cursor-pointer h-2">
+                        <span id="studyVal" class="text-sm font-bold text-brand-400 shrink-0 w-12 text-right">{{ profile.study_hours_per_week }} hrs</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="parental_support_level" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Parental Support Level</label>
+                    <div class="relative">
+                        <select id="parental_support_level" name="parental_support_level" required
+                            class="appearance-none block w-full pl-4 pr-10 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm">
+                            <option value="Low" {% if profile.parental_support_level == 'Low' %}selected{% endif %}>Low</option>
+                            <option value="Medium" {% if profile.parental_support_level == 'Medium' %}selected{% endif %}>Medium</option>
+                            <option value="High" {% if profile.parental_support_level == 'High' %}selected{% endif %}>High</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold rounded-xl active:scale-[0.98] transition-all duration-150 text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Metrics
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal Control JavaScript -->
+<script>
+    const updateModal = document.getElementById("updateProfileModal");
+    
+    function openUpdateProfileModal() {
+        updateModal.classList.remove("hidden");
+        // Trigger reflow for transition
+        void updateModal.offsetWidth;
+        updateModal.classList.add("opacity-100");
+        updateModal.querySelector("div").classList.remove("scale-95");
+        updateModal.querySelector("div").classList.add("scale-100");
+    }
+
+    function closeUpdateProfileModal() {
+        updateModal.classList.remove("opacity-100");
+        updateModal.querySelector("div").classList.remove("scale-100");
+        updateModal.querySelector("div").classList.add("scale-95");
+        
+        setTimeout(() => {
+            updateModal.classList.add("hidden");
+        }, 300);
+    }
+</script>
+
+{% if assessments %}
+<script>
+    // Safe loading of Jinja arrays
+    const rawLabels = {{ chart_labels | tojson }};
+    const rawScores = {{ chart_scores | tojson }};
+    const rawSubjects = {{ chart_subjects | tojson }};
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        
+        // Create custom gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+        gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
+        gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: rawLabels,
+                datasets: [{
+                    label: 'Score',
+                    data: rawScores,
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: '#8b5cf6',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#a78bfa',
+                    pointBorderColor: '#0f172a',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    tension: 0.35
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                return ` Score: ${context.parsed.y}% (${rawSubjects[index]})`;
+                            }
+                        },
+                        backgroundColor: '#1e293b',
+                        titleFont: { family: 'Outfit', size: 12 },
+                        bodyFont: { family: 'Inter', size: 12 },
+                        padding: 10,
+                        borderColor: '#475569',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 11 }
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 100,
+                        grid: {
+                            color: '#334155',
+                            lineWidth: 0.5
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 11 },
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends 'layout.html' %}
+
+{% block title %}System Management Console - EduPredict AI{% endblock %}
+{% block header_title %}Admin Control Panel{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-7xl mx-auto">
+
+    <!-- System Breakdown Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Users -->
+        <div class="glassmorphism rounded-2xl p-5 flex items-center justify-between shadow-xl">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Total Users</span>
+                <h2 class="font-outfit font-bold text-3xl text-slate-100">{{ total_users }}</h2>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 text-lg border border-slate-700">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+
+        <!-- Admins -->
+        <div class="glassmorphism rounded-2xl p-5 flex items-center justify-between shadow-xl">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Administrators</span>
+                <h2 class="font-outfit font-bold text-3xl text-emerald-400">{{ admins_count }}</h2>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-lg border border-emerald-500/20">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+        </div>
+
+        <!-- Teachers -->
+        <div class="glassmorphism rounded-2xl p-5 flex items-center justify-between shadow-xl">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Teachers</span>
+                <h2 class="font-outfit font-bold text-3xl text-indigo-400">{{ teachers_count }}</h2>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 text-lg border border-indigo-500/20">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+        </div>
+
+        <!-- Students -->
+        <div class="glassmorphism rounded-2xl p-5 flex items-center justify-between shadow-xl">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Students</span>
+                <h2 class="font-outfit font-bold text-3xl text-brand-400">{{ students_count }}</h2>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400 text-lg border border-brand-500/20">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center Config: ML Engine & CSV Upload -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- ML Control Center Card -->
+        <div class="lg:col-span-1 glassmorphism rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+            <div>
+                <h3 class="font-outfit font-bold text-lg text-slate-100 mb-2">Machine Learning Engine</h3>
+                <p class="text-xs text-slate-400 mb-6">Manage institutional predictive algorithm coefficients and retrain parameters.</p>
+                
+                <!-- Status Row -->
+                <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Model Status</span>
+                        {% if model_trained %}
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block animate-pulse"></span> Active
+                            </span>
+                        {% else %}
+                            <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-bold">
+                                Not Found
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Classifier Algorithm:</span>
+                            <span class="font-semibold text-slate-200">RandomForest</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Cross Validation:</span>
+                            <span class="font-semibold text-slate-200">K-Fold Supported</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Target Labels:</span>
+                            <span class="font-semibold text-slate-200">Risk & Grades</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Retrain Trigger Form -->
+            <form action="{{ url_for('retrain_model_route') }}" method="POST" class="mt-6">
+                <button type="submit"
+                    class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold rounded-xl active:scale-[0.98] transition-all duration-150 text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    Retrain Classifier Model
+                </button>
+            </form>
+        </div>
+
+        <!-- Bulk Data Ingestion Card -->
+        <div class="lg:col-span-2 glassmorphism rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+            <div>
+                <h3 class="font-outfit font-bold text-lg text-slate-100 mb-2">Bulk CSV Student Ingestion</h3>
+                <p class="text-xs text-slate-400 mb-6">Upload institutional spreadsheet records to register and pre-predict student risks.</p>
+
+                <!-- CSV Guidelines -->
+                <div class="mb-6 p-4 rounded-xl bg-slate-900/40 border border-slate-800">
+                    <h5 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2"><i class="fa-solid fa-file-csv text-brand-400 mr-1.5"></i> Required Columns Format</h5>
+                    <code class="text-xs text-brand-300 font-mono select-all block py-1 bg-slate-950 px-2.5 rounded border border-slate-850 truncate">
+                        name,email,attendance_rate,study_hours_per_week,past_score,parental_support_level
+                    </code>
+                    <p class="text-[10px] text-slate-500 mt-2">Example: <code>John Doe,john@school.com,92,12.5,84,Medium</code></p>
+                </div>
+            </div>
+
+            <!-- CSV Upload Form -->
+            <form action="{{ url_for('upload_csv') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div class="border-2 border-dashed border-slate-700/80 rounded-xl p-6 hover:border-brand-500/50 transition duration-200 flex flex-col items-center justify-center relative cursor-pointer group bg-slate-900/20">
+                    <input type="file" name="csv_file" required id="csvFile" onchange="updateFileName(this)"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500 group-hover:text-brand-400 transition duration-150 mb-2"></i>
+                    <span id="fileName" class="text-xs text-slate-400 font-medium">Click to select CSV spreadsheet...</span>
+                </div>
+
+                <button type="submit"
+                    class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl active:scale-[0.98] transition-all duration-150 text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/10">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    Upload & Process Dataset
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- User Accounts Manager Table -->
+    <div class="glassmorphism rounded-2xl shadow-xl overflow-hidden">
+        <div class="p-6 border-b border-slate-850">
+            <h3 class="font-outfit font-bold text-lg text-slate-100">User Account Directory</h3>
+            <p class="text-xs text-slate-400">Total system accounts, security profiles, and cleanup tools</p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-900/40 text-slate-400 text-xs uppercase font-bold tracking-wider border-b border-slate-800">
+                        <th class="py-4 px-6">Name</th>
+                        <th class="py-4 px-6">Email Address</th>
+                        <th class="py-4 px-6 text-center">User Role</th>
+                        <th class="py-4 px-6 text-center">Database ID</th>
+                        <th class="py-4 px-6 text-right">Administrative Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 text-sm text-slate-300">
+                    {% for user in users %}
+                    <tr class="hover:bg-slate-800/20 transition duration-150">
+                        <!-- Name & Icon -->
+                        <td class="py-4 px-6 font-semibold text-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-850 flex items-center justify-center font-outfit text-xs font-bold text-slate-400 border border-slate-700">
+                                    {{ user.name[0] | upper }}
+                                </div>
+                                <span>{{ user.name }}</span>
+                            </div>
+                        </td>
+                        
+                        <!-- Email -->
+                        <td class="py-4 px-6">{{ user.email }}</td>
+                        
+                        <!-- Role Badge -->
+                        <td class="py-4 px-6 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold border inline-block w-20 text-center
+                                {% if user.role == 'admin' %}
+                                    bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                {% elif user.role == 'teacher' %}
+                                    bg-indigo-500/10 text-indigo-400 border-indigo-500/20
+                                {% else %}
+                                    bg-brand-500/10 text-brand-400 border-brand-500/20
+                                {% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        
+                        <!-- ID -->
+                        <td class="py-4 px-6 text-center font-mono text-xs text-slate-500">#{{ user.id }}</td>
+                        
+                        <!-- Actions -->
+                        <td class="py-4 px-6 text-right">
+                            {% if user.id == session.user_id %}
+                                <span class="text-xs text-slate-500 font-semibold italic px-3 py-1"><i class="fa-solid fa-lock mr-1"></i> Current Session</span>
+                            {% else %}
+                                <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" 
+                                    onsubmit="return confirm('Are you sure you want to permanently delete user account {{ user.name }}? This action is irreversible.')">
+                                    <button type="submit"
+                                        class="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500 text-xs font-semibold text-rose-400 hover:text-white border border-rose-500/20 rounded-lg transition duration-150 inline-flex items-center gap-1">
+                                        <i class="fa-solid fa-trash-can"></i> Delete
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function updateFileName(input) {
+        const span = document.getElementById("fileName");
+        if (input.files && input.files[0]) {
+            span.innerText = "Selected file: " + input.files[0].name;
+            span.classList.remove("text-slate-400");
+            span.classList.add("text-brand-400", "font-bold");
+        } else {
+            span.innerText = "Click to select CSV spreadsheet...";
+            span.classList.remove("text-brand-400", "font-bold");
+            span.classList.add("text-slate-400");
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'layout.html' %}
+
+{% block title %}Sign In - EduPredict AI{% endblock %}
+{% block header_title %}User Authentication{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[70vh] py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 glassmorphism p-8 md:p-10 rounded-2xl shadow-2xl relative overflow-hidden">
+        
+        <!-- Glowing gradient elements -->
+        <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl"></div>
+
+        <div class="text-center relative z-10">
+            <div class="mx-auto h-12 w-12 bg-gradient-to-tr from-brand-600 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20 mb-4">
+                <i class="fa-solid fa-key-skeleton text-white text-2xl"></i>
+            </div>
+            <h2 class="font-outfit font-extrabold text-3xl tracking-tight text-white mb-2">Welcome Back</h2>
+            <p class="text-sm text-slate-400">
+                Please enter your credentials to access the learning portal
+            </p>
+        </div>
+
+        <form class="mt-8 space-y-6 relative z-10" action="{{ url_for('login') }}" method="POST">
+            <div class="space-y-4">
+                <!-- Email Input -->
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-slate-300 mb-1.5">Email Address</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <input id="email" name="email" type="email" required autocomplete="email"
+                            class="appearance-none block w-full pl-10 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl placeholder-slate-500 text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:bg-slate-900 transition duration-200 text-sm"
+                            placeholder="you@school.com">
+                    </div>
+                </div>
+
+                <!-- Password Input -->
+                <div>
+                    <label for="password" class="block text-sm font-semibold text-slate-300 mb-1.5">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <input id="password" name="password" type="password" required autocomplete="current-password"
+                            class="appearance-none block w-full pl-10 pr-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl placeholder-slate-500 text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:bg-slate-900 transition duration-200 text-sm"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit"
+                    class="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-brand-500 active:scale-[0.98] transition-all duration-150 shadow-lg shadow-brand-500/25">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3 text-brand-300 group-hover:text-brand-100 transition duration-150">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </span>
+                    Sign In
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center mt-6 relative z-10">
+            <span class="text-sm text-slate-400">Don't have an account?</span>
+            <a href="{{ url_for('signup') }}" class="text-sm font-semibold text-brand-400 hover:text-brand-300 transition duration-150 ml-1">
+                Create free account
+            </a>
+        </div>
+        
+        <!-- Pre-populated credentials hint box -->
+        <div class="mt-8 p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 text-xs text-slate-400 space-y-1">
+            <p class="font-semibold text-slate-300 mb-1 text-center"><i class="fa-solid fa-circle-info mr-1"></i> Sandbox Test Accounts</p>
+            <div class="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-800/60">
+                <div>
+                    <span class="font-bold text-slate-300">Admin</span>
+                    <p class="mt-0.5 select-all">admin@learning.com</p>
+                    <p class="text-[10px] text-slate-500 font-mono">admin123</p>
+                </div>
+                <div>
+                    <span class="font-bold text-slate-300">Teacher</span>
+                    <p class="mt-0.5 select-all">teacher@learning.com</p>
+                    <p class="text-[10px] text-slate-500 font-mono">teacher123</p>
+                </div>
+                <div>
+                    <span class="font-bold text-slate-300">Student</span>
+                    <p class="mt-0.5 select-all">alice@learning.com</p>
+                    <p class="text-[10px] text-slate-500 font-mono">student123</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

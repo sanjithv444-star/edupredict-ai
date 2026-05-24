@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local environment secrets - NEVER commit this
+.env
+
+# Local development SQLite database
+student_system.db
+
+# IDE and editor artifacts
+.idea/
+.vscode/
+.DS_Store
+
+# Virtual environment directories
+.venv/
+venv/
+ENV/
+env/

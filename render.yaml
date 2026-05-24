@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: edupredict-ai
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt && python startup.py
+    startCommand: gunicorn app:app --workers 2 --timeout 120
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        sync: false           # Set manually in Render dashboard -> Environment
+      - key: SECRET_KEY
+        generateValue: true   # Render auto-generates a secure random value
+      - key: PYTHON_VERSION
+        value: 3.11.0

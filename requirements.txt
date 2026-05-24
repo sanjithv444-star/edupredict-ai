@@ -1,0 +1,11 @@
+Flask
+Flask-SQLAlchemy
+scikit-learn
+pandas
+numpy
+joblib
+pymysql
+cryptography
+gunicorn
+psycopg2-binary
+python-dotenv
